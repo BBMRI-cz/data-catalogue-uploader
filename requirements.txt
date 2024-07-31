@@ -1,0 +1,5 @@
+molgenis-py-client
+pypdf==3.17.0
+pytest
+pytest-mock
+pandas
