@@ -1,4 +1,10 @@
-class Sequencing:
+from uploader.molgenis_models.MolgenisObject import MolgenisObject
+
+
+class Sequencing(MolgenisObject):
+
+    TYPE = "fair-genomes_Sequencing"
+
     def __init__(self, patient_dict, sample_dict, run_metadata_dict):
         sample = patient_dict["samples"][0]
         self.SequencingIdentifier = sample["pseudo_ID"]
@@ -11,3 +17,12 @@ class Sequencing:
         self.ObservedReadLength = sample_dict["obsReadLength"]
         self.PercentageQ30 = run_metadata_dict["percentageQ30"].replace("%", "")
         self.OtherQualityMetrics = f"ClusterPF: {run_metadata_dict['clusterPF']}"
+
+    def add_to_catalog_if_not_exist(self, session):
+        analysis_ids = [val["SequencingIdentifier"] for val in session.get(self.TYPE)]
+        if self.SequencingIdentifier not in analysis_ids:
+            self._add_to_catalog(session)
+
+    def _add_to_catalog(self, session):
+        data_dict = self.serialize
+        session.add_all(self.TYPE, [data_dict])

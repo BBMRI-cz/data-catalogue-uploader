@@ -1,22 +1,35 @@
 import os
 import uuid
+from uploader.molgenis_models.MolgenisObject import MolgenisObject
 
-class Material:
+
+class Material(MolgenisObject):
+
+    TYPE = "fair-genomes_Material"
 
     def __init__(self, wsi_path, patient_dict, sample_dict):
-        sample =  patient_dict["samples"][0]
+        sample = patient_dict["samples"][0]
         self.MaterialIdentifier = sample["sample_ID"]
         self.CollectedFromPerson = patient_dict["ID"]
         self.BelongsToDiagnosis = f"mmci_clinical_{uuid.UUID(int=int(sample['biopsy_number'].replace('/', '').replace('-', '')))}"
-        self.SamplingTimestamp = sample["cut_time"] if sample["material"] == "tissue" else sample["taking_date"]
-        self.RegistrationTimestamp = sample["freeze_time"] if sample["material"] == "tissue" else sample["taking_date"]
+        self.SamplingTimestamp = sample["cut_time"] if sample["material"] == "Tissue" else sample["taking_date"]
+        self.RegistrationTimestamp = sample["freeze_time"] if sample["material"] == "Tissue" else sample["taking_date"]
         self.BiospecimenType = sample_dict["bioSpeciType"]
         self.PathologicalState = sample_dict["pathoState"]
         self.StorageConditions = sample_dict["storCond"]
         self.PercentageTumourCells = "NotAvailable (NA, nullflavor)"
         self.PhysicalLocation = "MMCI Bank of Biological Material"
         self.wholeslideimagesavailability = self._look_for_wsi(wsi_path, sample["biopsy_number"])
-        self.radiotherapyimagesavailability	= False
+        self.radiotherapyimagesavailability = False
+
+    def add_to_catalog_if_not_exist(self, session):
+        analysis_ids = [val["MaterialIdentifier"] for val in session.get(self.TYPE)]
+        if self.MaterialIdentifier not in analysis_ids:
+            self._add_to_catalog(session)
+
+    def _add_to_catalog(self, session):
+        data_dict = self.serialize
+        session.add_all(self.TYPE, [data_dict])
 
     def _look_for_wsi(self, wsi_path, biopsy_number):
         wsi_folder, biopsy_start = self._make_path_from_biopsy_number(biopsy_number)

@@ -1,9 +1,10 @@
 import os
-
+import re
 
 def get_all_runs_with_data_for_catalogue(organised_folder: str) -> [str]:
     runs_to_precess_for_catalogue = []
-    for year in os.listdir(organised_folder):
+    years = [year for year in os.listdir(organised_folder) if re.match(r'^[\d]{4}$', year)]
+    for year in years:
         for run_type in os.listdir(os.path.join(organised_folder, year)):
             multiple_runs_path = os.path.join(organised_folder, year, run_type)
             for run in os.listdir(multiple_runs_path):

@@ -20,14 +20,14 @@ class SampleInfoMMCI:
 
 class CollectSampleMetadata:
 
-    def __init__(self, run_path, sample_stat_info_path, catalog_info_path):
+    def __init__(self, run_path, sample_path, catalog_info_path):
         self.sample_info = SampleInfoMMCI()
         self.run_path = run_path
-        self.sample_path = sample_stat_info_path
+        self.sample_path = sample_path
         self.clinical_data_path = catalog_info_path
 
     def __call__(self):
-        sample_id = os.path.basename(self.sample_path).replace("_StatInfo.txt", "")
+        sample_id = os.path.basename(self.sample_path)
         metadata = self._find_sample_metadata(sample_id)
         if not os.path.exists(os.path.join(self.run_path, "sample_metadata")):
             os.mkdir(os.path.join(self.run_path, "sample_metadata"))
@@ -35,8 +35,8 @@ class CollectSampleMetadata:
             json.dump(metadata, outfile, indent=4)
 
     def _find_sample_metadata(self, sample_id):
-        self._find_data_in_statinfo(self.sample_path)
-        self._find_data_in_CCRS(os.path.join(self.run_path, "Samples", sample_id, "Analysis", "Reports",
+        self._find_data_in_statinfo(os.path.join(self.sample_path, "Analysis", f"{sample_id}_StatInfo.txt"))
+        self._find_data_in_CCRS(os.path.join(self.sample_path, "Analysis", "Reports",
                                              f"{sample_id}_Coverage_Curve_Report1_Statistics.txt"))
         self._find_data_in_clinical_info(self.clinical_data_path, sample_id)
         json_str = self.sample_info.__dict__

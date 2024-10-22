@@ -8,27 +8,30 @@ import argparse
 
 
 def run(organised_files_foldes, wsi_folders, libraries_folders):
-    molgenis_login = os.environ["CATALOG_LOGIN"]
-    molgenis_password = os.environ["CATALOG_PASSWORD"]
+    molgenis_login = None  # os.environ["CATALOG_LOGIN"]
+    molgenis_password = None  # os.environ["CATALOG_PASSWORD"]
 
     run_paths_for_catalogue_upload = get_all_runs_with_data_for_catalogue(organised_files_foldes)
 
     for absolute_run_path in run_paths_for_catalogue_upload:
+        print(absolute_run_path)
         logging.info("Collecting metadata...")
         upload_to_catalog = CollectRunMetadata(absolute_run_path)()
 
         catalog_info_folder = os.path.join(absolute_run_path, "catalog_info_per_pred_number")
         for sample_id in os.listdir(catalog_info_folder):
             sample_id = sample_id.replace(".json", "")
-            sample_stat_info = os.path.join(absolute_run_path, "Samples", sample_id, "Analysis", "Reports",
-                                            f"{sample_id}_StatInfo.txt")
-            CollectSampleMetadata(absolute_run_path, sample_stat_info, catalog_info_folder)()
+            sample_path = os.path.join(absolute_run_path, "Samples", sample_id)
+            CollectSampleMetadata(absolute_run_path, sample_path, catalog_info_folder)()
 
         logging.info("Uploading data to catalog...")
-        importer = MolgenisImporter(absolute_run_path, wsi_folders, libraries_folders, molgenis_login,
+        importer = MolgenisImporter(absolute_run_path,
+                                    wsi_folders,
+                                    libraries_folders,
+                                    molgenis_login,
                                     molgenis_password)
         importer()
-        del importer
+        # del importer
 
 
 # Press the green button in the gutter to run the script.
