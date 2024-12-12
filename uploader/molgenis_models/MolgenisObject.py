@@ -5,7 +5,7 @@ class MolgenisObject(ABC):
 
     @abstractmethod
     def add_to_catalog_if_not_exist(self, session):
-        pass
+        ...
 
     @property
     def serialize(self):

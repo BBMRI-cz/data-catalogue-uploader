@@ -1,4 +1,3 @@
-from ..manage_libraries import LibrariesManager
 import re
 from uploader.molgenis_models.MolgenisObject import MolgenisObject
 
@@ -7,11 +6,10 @@ class SamplePreparation(MolgenisObject):
 
     TYPE = "fair-genomes_SamplePreparation"
 
-    def __init__(self, run_path, libraries_path, sample_sheet, patient_dict):
+    def __init__(self, run_path, patient_dict, lib_data):
         sample = patient_dict["samples"][0]
         self.SampleprepIdentifier = sample["pseudo_ID"].replace("predictive", "sampleprep")
         self.BelongsToMaterial = sample["sample_ID"]
-        lib_data = LibrariesManager(libraries_path, sample_sheet, run_path, sample["pseudo_ID"]).get_data_from_libraries()
         
         if lib_data:
             self.InputAmount = re.sub("[^0-9]", "", lib_data["input_amount"].split("-")[0]) if "-" in lib_data["input_amount"] else re.sub("[^0-9]", "", lib_data["input_amount"])

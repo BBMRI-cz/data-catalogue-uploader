@@ -12,11 +12,11 @@ class Material(MolgenisObject):
         self.MaterialIdentifier = sample["sample_ID"]
         self.CollectedFromPerson = patient_dict["ID"]
         self.BelongsToDiagnosis = f"mmci_clinical_{uuid.UUID(int=int(sample['biopsy_number'].replace('/', '').replace('-', '')))}"
-        self.SamplingTimestamp = sample["cut_time"] if sample["material"] == "Tissue" else sample["taking_date"]
-        self.RegistrationTimestamp = sample["freeze_time"] if sample["material"] == "Tissue" else sample["taking_date"]
-        self.BiospecimenType = sample_dict["bioSpeciType"]
-        self.PathologicalState = sample_dict["pathoState"]
-        self.StorageConditions = sample_dict["storCond"]
+        self.SamplingTimestamp = sample["cut_time"] if sample["material"].lower() == "tissue" else sample["taking_date"]
+        self.RegistrationTimestamp = sample["freeze_time"] if sample["material"].lower() == "tissue" else sample["taking_date"]
+        self.BiospecimenType = sample_dict.bioSpeciType
+        self.PathologicalState = sample_dict.pathoState
+        self.StorageConditions = sample_dict.storCond
         self.PercentageTumourCells = "NotAvailable (NA, nullflavor)"
         self.PhysicalLocation = "MMCI Bank of Biological Material"
         self.wholeslideimagesavailability = self._look_for_wsi(wsi_path, sample["biopsy_number"])

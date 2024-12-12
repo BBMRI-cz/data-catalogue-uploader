@@ -4,8 +4,8 @@ import os
 import shutil
 
 TEST_LIBRARY_FOLDER = os.path.join(os.path.dirname(__file__), "test_libraries")
-TEST_DESTINATION_RUN = os.path.join(os.path.dirname(__file__), "test_destination_for_copy", "2020", "MiSEQ", "00000",
-                                    "2020_M00000_0000_00000000-00000")
+TEST_DESTINATION_RUN = os.path.join(os.path.dirname(__file__), "test_destination_for_copy", "2020", "MiSEQ", "complete-runs",
+                                    "2020_M00000_0000_00000000-complete-runs")
 SPECIAL_SAMPLE_SHEET = os.path.join(os.path.dirname(__file__), "SpecialSampleSheet.csv")
 
 

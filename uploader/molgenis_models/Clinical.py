@@ -1,6 +1,7 @@
 import uuid
 from uploader.molgenis_models.MolgenisObject import MolgenisObject
 from datetime import datetime
+from dateutil import relativedelta
 
 
 class Clinical(MolgenisObject):
@@ -29,17 +30,24 @@ class Clinical(MolgenisObject):
         data_dict = self.serialize
         session.add_all(self.TYPE, [data_dict])
 
-    @staticmethod
-    def _calculate_age_at_diagnosis(birth, sample):
-        datetime_format = "%d/%m/%Y"
-        if sample["material"] == "Tissue":
-            return datetime.strptime(sample["freeze_time"],
-                                     datetime_format + ", %H:%M:%S") - datetime.strptime(birth, datetime_format)
+    def _calculate_age_at_diagnosis(self, birth, sample):
+        datetime_format = "%Y-%m-%d"
+        birth = self._adjust_birth_format(birth)
+        if sample["material"].lower() == "tissue":
+            return relativedelta.relativedelta(datetime.strptime(sample["freeze_time"],
+                                                                 f"{datetime_format}T%H:%M:%S"),
+                                datetime.strptime(birth, datetime_format)).years
         else:
-            return datetime.strptime(sample["taking_date"], datetime_format) - datetime.strptime(birth, datetime_format)
+            return relativedelta.relativedelta(datetime.strptime(sample["taking_date"], datetime_format),
+                                               datetime.strptime(birth, datetime_format)).years
 
-    @staticmethod
-    def _adjust_diagnosis(diagnosis):
+    def _adjust_birth_format(self, birth):
+        if birth.startswith("--"):
+            month, year = birth.replace("--", "").split("/")
+            return f"{year}-{month}-1"
+        return birth
+
+    def _adjust_diagnosis(self, diagnosis):
         if len(diagnosis) == 4:
             return diagnosis[:3] + "." + diagnosis[3]
         return diagnosis

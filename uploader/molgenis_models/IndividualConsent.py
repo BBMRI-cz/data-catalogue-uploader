@@ -11,7 +11,7 @@ class IndividualConsent(MolgenisObject):
         self.PersonConsenting = patient_dict["ID"]
         self.ConsentFormUsed = "mmci_consentform_1"
         self.CollectedBy = "Masaryk Memorial Cancer Institute"
-        self.SigningDate = sample["freeze_time"] if sample["material"] == "Tissue" else sample["taking_date"]
+        self.SigningDate = sample["freeze_time"] if sample["material"].lower() == "tissue" else sample["taking_date"]
         self.RepresentedBy = "patient"
         self.DataUsePermissions = "general research use"
 

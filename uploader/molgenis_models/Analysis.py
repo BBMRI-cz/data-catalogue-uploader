@@ -1,5 +1,3 @@
-from abc import ABC
-
 from uploader.molgenis_models.MolgenisObject import MolgenisObject
 
 

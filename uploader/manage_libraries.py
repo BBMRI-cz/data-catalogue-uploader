@@ -10,17 +10,17 @@ class LibrariesManager:
         "TSO500": "TruSight"
         }
 
-    def __init__(self, libraries_path, sample_sheet_path, path_to_run, predictive_number):
+    def __init__(self, libraries_path, run_path):
         all_files = [os.path.join(libraries_path, file) for file in os.listdir(libraries_path)
                      if not os.path.isdir(file) and file.endswith(".csv")]
         latest_file = max(all_files, key=os.path.getmtime)
+        self.run_path = run_path
         self.libraries_path = latest_file
-        self.sample_sheet_path = sample_sheet_path
-        self.predictive_number = predictive_number
-        self.parameters_path = os.path.join(path_to_run, "Samples", predictive_number,
-                                            "Analysis", f"{predictive_number}_Parameters.txt")
+        self.sample_sheet_path = os.path.join(run_path, "SampleSheet.csv")
 
-    def get_data_from_libraries(self):
+    def get_data_from_libraries(self, predictive_number):
+        parameters_path = self._get_parameteres_path(predictive_number)
+
         df = pd.read_csv(self.libraries_path, delimiter=";", encoding="CP1250")
         df.dropna(inplace=True, subset=["Panel"])
         df.replace(to_replace="NEPRAVDA", value=False, inplace=True)
@@ -29,7 +29,7 @@ class LibrariesManager:
         df["Text in parameters"] = df["Text in parameters"].str.lower()
 
         possible_params = df["Text in parameters"].tolist()
-        library_name_in_parameter_file = self._look_for_lib_in_parameters(possible_params)
+        library_name_in_parameter_file = self._look_for_lib_in_parameters(possible_params, parameters_path)
         if library_name_in_parameter_file is None:
             samplesheet_df = pd.read_csv(self.sample_sheet_path, delimiter=",",
                                          names=["[Header]", "Unnamed: 1", "Unnamed: 2", "Unnamed: 3", "Unnamed: 4",
@@ -55,8 +55,15 @@ class LibrariesManager:
             return self._create_dict_with_library_info(df, [],
                                                        panel_name_from_parameter_file=library_name_in_parameter_file)
 
-    def _look_for_lib_in_parameters(self, possible_parameters):
-        with open(self.parameters_path, "r") as f:
+    def _get_parameteres_path(self, predictive_number):
+        analysis_part = os.path.join(self.run_path, "Samples", predictive_number, "Analysis")
+        if os.path.exists(os.path.join(analysis_part, "Reports", f"{predictive_number}_Parameters.txt")):
+            return os.path.join(analysis_part, "Reports", f"{predictive_number}_Parameters.txt")
+        else:
+            return os.path.join(analysis_part, f"{predictive_number}_Parameters.txt")
+
+    def _look_for_lib_in_parameters(self, possible_parameters, parameters_path):
+        with open(parameters_path, "r") as f:
             text = f.readlines()
         for parameter in possible_parameters:
             if parameter in text[-1].lower():
@@ -82,37 +89,37 @@ class LibrariesManager:
             for _, row in dataframe.iterrows():
                 if row["Text in parameters"] in panel_name_from_parameter_file.lower():
                     return {
-                                    "input_amount": row["Input Amount"],
-                                    "library_prep_kit": row["code in the molgenis catalogue"],
-                                    "pca_free": row["PCR Free"],
-                                    "target_enrichment_kid": row["Target Enrichment Kit"],
-                                    "umi_present": row["UMIs Present"],
-                                    "intended_insert_size": int(row["Intended Insert Size"]),
-                                    "intended_read_length": int(row["Intended Read Length"]),
-                                    "genes": row["Genes (*all coding regions covered)"]
-                                }
+                        "input_amount": row["Input Amount"],
+                        "library_prep_kit": row["code in the molgenis catalogue"].split(":")[0],
+                        "pca_free": row["PCR Free"],
+                        "target_enrichment_kid": row["Target Enrichment Kit"],
+                        "umi_present": row["UMIs Present"],
+                        "intended_insert_size": int(row["Intended Insert Size"]),
+                        "intended_read_length": int(row["Intended Read Length"]),
+                        "genes": row["Genes (*all coding regions covered)"]
+                    }
         else:
             for _, row in dataframe.iterrows():
                 if look_for_manual and panel_value in row["Panel"] and row["Text in parameters"] == "manual":
                     return {
-                                "input_amount": row["Input Amount"],
-                                "library_prep_kit": row["code in the molgenis catalogue"],
-                                "pca_free": row["PCR Free"],
-                                "target_enrichment_kid": row["Target Enrichment Kit"],
-                                "umi_present": row["UMIs Present"],
-                                "intended_insert_size": int(row["Intended Insert Size"]),
-                                "intended_read_length": int(row["Intended Read Length"]),
-                                "genes": row["Genes (*all coding regions covered)"]
-                            }
+                        "input_amount": row["Input Amount"],
+                        "library_prep_kit": row["code in the molgenis catalogue"].split(":")[0],
+                        "pca_free": row["PCR Free"],
+                        "target_enrichment_kid": row["Target Enrichment Kit"],
+                        "umi_present": row["UMIs Present"],
+                        "intended_insert_size": int(row["Intended Insert Size"]),
+                        "intended_read_length": int(row["Intended Read Length"]),
+                        "genes": row["Genes (*all coding regions covered)"]
+                    }
                 if not look_for_manual and panel_value in row["Panel"]:
                     return {
-                                "input_amount": row["Input Amount"],
-                                "library_prep_kit": row["code in the molgenis catalogue"],
-                                "pca_free": row["PCR Free"],
-                                "target_enrichment_kid": row["Target Enrichment Kit"],
-                                "umi_present": row["UMIs Present"],
-                                "intended_insert_size": int(row["Intended Insert Size"]),
-                                "intended_read_length": int(row["Intended Read Length"]),
-                                "genes": row["Genes (*all coding regions covered)"]
-                            }
+                        "input_amount": row["Input Amount"],
+                        "library_prep_kit": row["code in the molgenis catalogue"].split(":")[0],
+                        "pca_free": row["PCR Free"],
+                        "target_enrichment_kid": row["Target Enrichment Kit"],
+                        "umi_present": row["UMIs Present"],
+                        "intended_insert_size": int(row["Intended Insert Size"]),
+                        "intended_read_length": int(row["Intended Read Length"]),
+                        "genes": row["Genes (*all coding regions covered)"]
+                    }
             return None

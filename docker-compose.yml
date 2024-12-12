@@ -1,0 +1,14 @@
+version: '3.0'
+services:
+  run:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    volumes:
+      - /home/houfek/Work/MMCI/sequencing_pipeline/data-catalogue-playground/muni-sc/OrganisedRuns/:/OrganisedRuns
+      - /home/houfek/Work/MMCI/sequencing_pipeline/data-catalogue-playground/muni-sc/Libraries:/Libraries
+      - /home/houfek/Work/MMCI/sequencing_pipeline/data-catalogue-playground/muni-sc/WSI:/WSI
+    command: bash -c "python main.py
+                              -o /OrganisedRuns/
+                              -w /WSI/
+                              -d /Libraries/"
