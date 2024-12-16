@@ -1,7 +1,7 @@
 apiVersion: batch/v1
 kind: CronJob
 metadata:
-  name: organise-sequencing
+  name: upload-sequencing
 spec:
   schedule: "0 22 * * 0,3,5"
   jobTemplate:
@@ -18,7 +18,7 @@ spec:
             fsGroupChangePolicy: "OnRootMismatch"
           containers:
           - name: organise-sequencing
-            image: tomashoufek/data-catalogue-uploader:1.0.0
+            image: tomashoufek/data-catalogue-uploader:1.0.1
             imagePullPolicy: Always
             securityContext:
               allowPrivilegeEscalation: false

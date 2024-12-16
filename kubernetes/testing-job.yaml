@@ -1,0 +1,45 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: ubuntu-running
+spec:
+  securityContext:
+    fsGroup: 1000
+    runAsNonRoot: true
+    seccompProfile:
+      type: RuntimeDefault
+    runAsUser: 1005
+    runAsGroup: 1000
+    fsGroupChangePolicy: "OnRootMismatch"
+  containers:
+  - name: ubuntu-running
+    image: ubuntu:latest
+    resources:
+      limits:
+        memory: 512Mi
+        cpu: "1"
+      requests:
+        memory: 256Mi
+        cpu: "0.2"
+    imagePullPolicy: Always
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - ALL
+    command: ["/bin/bash", "-c", "--"]
+    args: ["while true; do sleep 30; done;"]
+    volumeMounts:
+    - name: storage-catalogue-volume
+      mountPath: /data/
+    - name: data-wsi-volume
+      mountPath: /wsi/
+      subPath: tiff
+  restartPolicy: "Never"
+  volumes:
+  - name: storage-catalogue-volume
+    persistentVolumeClaim:
+      claimName: pvc-storage-catalogue-secret
+  - name: data-wsi-volume
+    persistentVolumeClaim:
+      claimName: pvc-osd-secret

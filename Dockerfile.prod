@@ -1,0 +1,14 @@
+FROM bitnami/python:3.10
+
+RUN mkdir /uploader
+
+WORKDIR /uploader
+
+ADD requirements.txt .
+ADD main.py .
+ADD uploader/ uploader/
+ADD tests/ tests/
+
+RUN pip install -r requirements.txt
+
+USER 1005
