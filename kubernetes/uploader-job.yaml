@@ -18,7 +18,7 @@ spec:
             fsGroupChangePolicy: "OnRootMismatch"
           containers:
           - name: organise-sequencing
-            image: tomashoufek/data-catalogue-uploader:1.0.1
+            image: m16f/data-catalogue-uploader:1.0.2
             imagePullPolicy: Always
             securityContext:
               allowPrivilegeEscalation: false
