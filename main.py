@@ -20,8 +20,11 @@ def run(organised_files_foldes, wsi_folders, libraries_folders):
 
     miseq_run_paths_for_catalogue_upload = get_all_runs_with_data_for_catalogue(organised_files_foldes,
                                                                                 wanted_run_type="MiSEQ")
+    print("MiSeq:", miseq_run_paths_for_catalogue_upload)
+
     nextseq_run_paths_for_catalogue_upload = get_all_runs_with_data_for_catalogue(organised_files_foldes,
                                                                                   wanted_run_type="NextSeq")
+    print("NextSeq:", nextseq_run_paths_for_catalogue_upload)
 
     # miseq upload
     for absolute_run_path in miseq_run_paths_for_catalogue_upload:
@@ -53,7 +56,8 @@ def run(organised_files_foldes, wsi_folders, libraries_folders):
             sample_path = os.path.join(absolute_run_path, "Samples", sample_id)
             sample_metadata = CollectNextSeqSampleMetadata(absolute_run_path, sample_path, catalog_info_folder).collect()
             importer.upload(run_metadata, sample_metadata, clinical_info_path, "NextSeq")
-        open(os.path.join(absolute_run_path, ".uploaded"), "w").close()
+
+    print("Done")
 
     del importer
 

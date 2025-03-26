@@ -14,7 +14,7 @@ def get_all_runs_with_data_for_catalogue(organised_folder: str, wanted_run_type:
                 for run in os.listdir(multiple_runs_path):
                     run_catalog_info = os.path.join(multiple_runs_path, run, "catalog_info_per_pred_number")
                     already_uploaded = os.path.join(multiple_runs_path, run, ".uploaded")
-                    if os.path.exists(run_catalog_info) and os.listdir(run_catalog_info) and not already_uploaded:
+                    if os.path.exists(run_catalog_info) and os.listdir(run_catalog_info) and not os.path.exists(already_uploaded):
                         runs_to_precess_for_catalogue.append(os.path.join(multiple_runs_path, run))
 
     return runs_to_precess_for_catalogue
