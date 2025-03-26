@@ -56,6 +56,7 @@ def run(organised_files_foldes, wsi_folders, libraries_folders):
             sample_path = os.path.join(absolute_run_path, "Samples", sample_id)
             sample_metadata = CollectNextSeqSampleMetadata(absolute_run_path, sample_path, catalog_info_folder).collect()
             importer.upload(run_metadata, sample_metadata, clinical_info_path, "NextSeq")
+        open(os.path.join(absolute_run_path, ".uploaded"), "w").close()
 
     print("Done")
 
