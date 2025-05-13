@@ -1,7 +1,9 @@
 import os
 import re
+from typing import List
 
-def get_all_runs_with_data_for_catalogue(organised_folder: str, wanted_run_type: str="MiSEQ") -> [str]:
+
+def get_all_runs_with_data_for_catalogue(organised_folder: str, wanted_run_type: str="MiSEQ") -> List[str]:
     runs_to_precess_for_catalogue = []
     years = [year for year in os.listdir(organised_folder) if re.match(r'^[\d]{4}$', year)]
     for year in years:

@@ -1,6 +1,5 @@
 import molgenis.client
 import json
-from runpy import run_path
 
 from uploader.molgenis_models.Analysis import Analysis
 from uploader.molgenis_models.Clinical import Clinical

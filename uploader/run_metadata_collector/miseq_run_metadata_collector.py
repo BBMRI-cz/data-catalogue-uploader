@@ -17,10 +17,6 @@ class CollectMiseqRunMetadata(RunMetadataCollector):
         xml_run_info = os.path.join(self.run_path, "RunInfo.xml")
         txt_analysis_log = os.path.join(self.run_path, "AnalysisLog.txt")
 
-        if not (os.path.exists(xml_run_parameters) and os.path.exists(xml_generate_fastq_run_statistics)
-                and os.path.exists(xml_run_info) and os.path.exists(txt_analysis_log)):
-            return False
-
         self._find_run_metadata(xml_run_parameters, xml_generate_fastq_run_statistics, xml_run_info, txt_analysis_log)
 
         return self.run_info
