@@ -1,4 +1,5 @@
 from uploader.molgenis_models.MolgenisObject import MolgenisObject
+from molgenis_emx2_pyclient import Client
 
 
 class Analysis(MolgenisObject):
@@ -19,6 +20,15 @@ class Analysis(MolgenisObject):
         analysis_ids = [val["AnalysisIdentifier"] for val in session.get(self.TYPE)]
         if self.AnalysisIdentifier not in analysis_ids:
             self._add_to_catalog(session)
+
+    def upsert_to_catalog(self, client: Client):
+        data = self.serialize
+        temp = [data]
+        print(type(temp))           # Should be <class 'list'>
+        print(len(temp))            # Should be 1
+        print(type(temp[0]))        # Should be <class 'dict'>
+        print(temp[0].keys())
+        print(client.save_schema("analysis", data=temp))
 
     def _add_to_catalog(self, session):
         data_dict = self.serialize

@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from molgenis_emx2_pyclient import Client
 
 
 class MolgenisObject(ABC):
@@ -7,12 +8,16 @@ class MolgenisObject(ABC):
     def add_to_catalog_if_not_exist(self, session):
         ...
 
+    @abstractmethod
+    def upsert_to_catalog(self, client: Client):
+        ...
+
     @property
     def serialize(self):
         d = {}
         for key, value in self.__dict__.items():
-            if value.__class__ == tuple:
-                d[key] = value[0]
+            if isinstance(value, tuple):
+                d[key.lower()] = value[0]
             else:
-                d[key] = value
+                d[key.lower()] = value
         return d

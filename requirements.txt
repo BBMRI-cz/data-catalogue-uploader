@@ -1,3 +1,4 @@
+molgenis_emx2_pyclient
 molgenis-py-client
 pypdf==3.17.0
 pytest
