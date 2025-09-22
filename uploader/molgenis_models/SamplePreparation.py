@@ -1,4 +1,5 @@
 import re
+from uploader.logging_config.logging_config import LoggingConfig
 from uploader.molgenis_models.MolgenisObject import MolgenisObject
 from molgenis_emx2_pyclient import Client
 
@@ -14,7 +15,7 @@ class SamplePreparation(MolgenisObject):
         
         if lib_data:
             self.InputAmount = re.sub("[^0-9]", "", lib_data["input_amount"].split("-")[0]) if "-" in lib_data["input_amount"] else re.sub("[^0-9]", "", lib_data["input_amount"])
-            self.LibraryPreparationKit = lib_data["library_prep_kit"]
+            #self.LibraryPreparationKit = lib_data["library_prep_kit"]
             self.PcrFree = lib_data["pca_free"]
             #self.TargetEnrichmentKit = lib_data["target_enrichment_kid"]
             self.UmisPresent = lib_data["umi_present"]
@@ -28,13 +29,9 @@ class SamplePreparation(MolgenisObject):
             self._add_to_catalog(session)
 
     def upsert_to_catalog(self, client: Client):
+        logger = LoggingConfig.get_logger()
         data = self.serialize
-        temp = [data]
-        print(type(temp))           # Should be <class 'list'>
-        print(len(temp))            # Should be 1
-        print(type(temp[0]))        # Should be <class 'dict'>
-        print(temp[0].keys())
-        print(client.save_schema("samplepreparation", data=temp))
+        logger.info(client.save_schema("samplepreparation", data=[data]))
 
     def _add_to_catalog(self, session):
         data_dict = self.serialize

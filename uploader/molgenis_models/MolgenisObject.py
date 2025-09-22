@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from molgenis_emx2_pyclient import Client
+import pandas as pd
 
 
 class MolgenisObject(ABC):

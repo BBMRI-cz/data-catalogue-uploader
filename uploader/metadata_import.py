@@ -3,6 +3,7 @@ import json
 from molgenis_emx2_pyclient import Client
 
 
+from uploader.logging_config.logging_config import LoggingConfig
 from uploader.molgenis_models.Analysis import Analysis
 from uploader.molgenis_models.Clinical import Clinical
 from uploader.molgenis_models.IndividualConsent import IndividualConsent
@@ -32,6 +33,8 @@ class MetadataImport:
         self.libraries_path = libraries_path
 
     def upload(self, run_metadata, sample_metadata, clinical_info_path, run_type, libraries_data=None):
+        logger = LoggingConfig.get_logger()
+
         with open(clinical_info_path) as clinical_file:
             clinical_metadata = json.load(clinical_file)
 
@@ -47,8 +50,9 @@ class MetadataImport:
         if run_type == "MiSEQ":
             upload_sequence.append(Analysis(clinical_metadata))
 
+
         for molgenis_object in upload_sequence:
-            print(json.dumps(molgenis_object.serialize, indent=2))
+            logger.info(json.dumps(molgenis_object.serialize, indent=2))
             # molgenis_object.add_to_catalog_if_not_exist(self.session)
             molgenis_object.upsert_to_catalog(self.client)
 

@@ -1,5 +1,6 @@
 import os
 import uuid
+from uploader.logging_config.logging_config import LoggingConfig
 from uploader.molgenis_models.MolgenisObject import MolgenisObject
 from molgenis_emx2_pyclient import Client
 
@@ -33,13 +34,9 @@ class Material(MolgenisObject):
         session.add_all(self.TYPE, [data_dict])
 
     def upsert_to_catalog(self, client: Client):
+        logger = LoggingConfig.get_logger()
         data = self.serialize
-        temp = [data]
-        print(type(temp))           # Should be <class 'list'>
-        print(len(temp))            # Should be 1
-        print(type(temp[0]))        # Should be <class 'dict'>
-        print(temp[0].keys())
-        print(client.save_schema("material", data=temp))
+        logger.info(client.save_schema("material", data=[data]))
 
     def _look_for_wsi(self, wsi_path, biopsy_number):
         wsi_folder, biopsy_start = self._make_path_from_biopsy_number(biopsy_number)

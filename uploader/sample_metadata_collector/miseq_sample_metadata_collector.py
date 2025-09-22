@@ -36,7 +36,7 @@ class CollectMiseqSampleMetadata(SampleMetadataCollector):
             for line in f:
                 avr_coverage_match = re.search(r'Average Coverage\s+([\d.,]+)', line)
                 if avr_coverage_match:
-                    self.sample_info.avReadDepth = float(avr_coverage_match.group(1).replace(",", "."))
+                    self.sample_info.avReadDepth = str(int(float(avr_coverage_match.group(1).replace(",", "."))))
 
     def _find_data_in_clinical_info(self, json_clinical_data, sample_id):
         if os.path.exists(os.path.join(json_clinical_data, f"{sample_id}.json")):

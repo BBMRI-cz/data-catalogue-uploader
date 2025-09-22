@@ -11,16 +11,20 @@ from uploader.sample_metadata_collector.nextseq_sample_metadata_collector import
 from uploader.metadata_import import MetadataImport
 from uploader.file_helpers import get_all_runs_with_data_for_catalogue
 from uploader.manage_libraries import LibrariesManager
+from uploader.logging_config.logging_config import LoggingConfig
 import argparse
 
 from uploader.sample_metadata_collector.sample_metadata_collector import SampleInfoMMCI
 
 
-def process_runs(run_paths: List[str], libraries_folders: str, importer: MetadataImport, run_type: str) -> None:
+def process_runs(run_paths: List[str], libraries_folders: str, importer: MetadataImport, run_type: str, log_dir: str) -> None:
     """Process and upload run data for each run."""
     for absolute_run_path in run_paths:
+        run_id = os.path.basename(absolute_run_path.rstrip("/"))
+        logger = LoggingConfig.initialize(run_id, log_dir)
         try:
-            print(f"Processing {absolute_run_path}...")
+            logger.info(f"Processing {absolute_run_path}...")
+            logger.debug("just testing")
             run_metadata = collect_run_metadata(absolute_run_path, run_type)
             catalog_info_folder = os.path.join(absolute_run_path, "catalog_info_per_pred_number")
             lib_manager = LibrariesManager(libraries_folders, absolute_run_path)
@@ -29,15 +33,16 @@ def process_runs(run_paths: List[str], libraries_folders: str, importer: Metadat
                 process_and_upload_sample(sample_id, catalog_info_folder, absolute_run_path, run_metadata, lib_manager, importer, run_type)
 
             open(os.path.join(absolute_run_path, ".uploaded"), "w").close()
+            logger.info(f"Successfully uploaded run {absolute_run_path}...")
 
         except FileNotFoundError as e:
-            print(f"Error: Missing file in run {absolute_run_path}: {e}")
-            print("Full stack trace:")
-            print(traceback.format_exc())
+            logger.info(f"Error: Missing file in run {absolute_run_path}: {e}")
+            logger.info("Full stack trace:")
+            logger.info(traceback.format_exc())
         except Exception as e:
-            print(f"Unexpected error in run {absolute_run_path}: {e}")
-            print("Full stack trace:")
-            print(traceback.format_exc())
+            logger.info(f"Unexpected error in run {absolute_run_path}: {e}")
+            logger.info("Full stack trace:")
+            logger.info(traceback.format_exc())
 
 
 def process_and_upload_sample(sample_id: str, catalog_info_folder: str, absolute_run_path: str, run_metadata: RunInfoMMCI, lib_manager: LibrariesManager, importer: MetadataImport, run_type: str) -> None:
@@ -70,7 +75,7 @@ def collect_sample_metadata(absolute_run_path: str, sample_path: str, catalog_in
     else:
         raise ValueError(f"Unsupported run type: {run_type}")
 
-def run(organised_files_folders, wsi_folders, libraries_folders):
+def run(organised_files_folders, wsi_folders, libraries_folders, log_dir):
     molgenis_login = os.environ["CATALOG_LOGIN"]
     molgenis_password = os.environ["CATALOG_PASSWORD"]
 
@@ -80,15 +85,12 @@ def run(organised_files_folders, wsi_folders, libraries_folders):
                               molgenis_password)
 
     miseq_run_paths_for_catalogue_upload = get_all_runs_with_data_for_catalogue(organised_files_folders, wanted_run_type="MiSEQ")
-    print("MiSeq:", miseq_run_paths_for_catalogue_upload)
 
     nextseq_run_paths_for_catalogue_upload = get_all_runs_with_data_for_catalogue(organised_files_folders, wanted_run_type="NextSeq")
-    print("NextSeq:", nextseq_run_paths_for_catalogue_upload)
 
-    process_runs(miseq_run_paths_for_catalogue_upload, libraries_folders, importer, "MiSEQ")
-    process_runs(nextseq_run_paths_for_catalogue_upload, libraries_folders, importer, "NextSeq")
+    process_runs(miseq_run_paths_for_catalogue_upload, libraries_folders, importer, "MiSEQ", log_dir)
+    process_runs(nextseq_run_paths_for_catalogue_upload, libraries_folders, importer, "NextSeq", log_dir)
 
-    print("Upload process completed.")
     del importer
 
 if __name__ == '__main__':
@@ -98,6 +100,7 @@ if __name__ == '__main__':
     parser.add_argument("-o", "--organised_runs", type=str, required=True, help="")
     parser.add_argument("-w", "--wsi", type=str, required=True, help="Path to a WSI folder")
     parser.add_argument("-d", "--libraries", type=str, required=True, help="Path to a libraries document")
+    parser.add_argument("-l", "--log_dir", type=str, required=True, help="Path to a logging directory")
     args = parser.parse_args()
 
-    run(args.organised_runs, args.wsi, args.libraries)
+    run(args.organised_runs, args.wsi, args.libraries, args.log_dir)

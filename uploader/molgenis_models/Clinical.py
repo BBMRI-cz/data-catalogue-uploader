@@ -2,6 +2,7 @@ import uuid
 
 from molgenis_emx2_pyclient import Client
 
+from uploader.logging_config.logging_config import LoggingConfig
 from uploader.molgenis_models.MolgenisObject import MolgenisObject
 from datetime import datetime
 from dateutil import relativedelta
@@ -16,14 +17,14 @@ class Clinical(MolgenisObject):
         sample = patient_dict["samples"][0]
         self.ClinicalIdentifier = f"mmci_clinical_{uuid.UUID(int=int(sample['biopsy_number'].replace('/', '').replace('-', '')))}"
         self.BelongsToPerson = patient_dict["ID"]
-        #self.Phenotype = ["NoInformation (NI, nullflavor)"]
-        #self.UnobservedPhenotype = ["NoInformation (NI, nullflavor)"]
-        #self.ClinicalDiagnosis = self._adjust_diagnosis(sample["diagnosis"]) if sample["material"] != "genome" else None
-        #self.MolecularDiagnosisGene = ["NoInformation (NI, nullflavor)"]
+        self.Phenotype = '"NoInformation (NI, nullflavor)"'
+        self.UnobservedPhenotype = '"NoInformation (NI, nullflavor)"'
+        self.ClinicalDiagnosis = self._adjust_diagnosis(sample["diagnosis"]) if sample["material"] != "genome" else None
+        self.MolecularDiagnosisGene = '"NoInformation (NI, nullflavor)"'
         self.AgeAtDiagnosis = self._calculate_age_at_diagnosis(patient_dict["birth"], sample)
         self.AgeAtLastScreening = self._calculate_age_at_diagnosis(patient_dict["birth"], sample)
-        #self.Medication = ["NoInformation (NI, nullflavor)"]
-        #self.MedicalHistory = ["NoInformation (NI, nullflavor)"]
+        self.Medication = '"NoInformation (NI, nullflavor)"'
+        self.MedicalHistory = '"NoInformation (NI, nullflavor)"'
 
     def add_to_catalog_if_not_exist(self, session):
         analysis_ids = [val["ClinicalIdentifier"] for val in session.get(self.TYPE)]
@@ -31,13 +32,9 @@ class Clinical(MolgenisObject):
             self._add_to_catalog(session)
 
     def upsert_to_catalog(self, client: Client):
+        logger = LoggingConfig.get_logger()
         data = self.serialize
-        temp = [data]
-        print(type(temp))           # Should be <class 'list'>
-        print(len(temp))            # Should be 1
-        print(type(temp[0]))        # Should be <class 'dict'>
-        print(temp[0].keys())
-        print(client.save_schema("clinical", data=temp))
+        logger.info(client.save_schema("clinical", data=[data]))
 
     def _add_to_catalog(self, session):
         data_dict = self.serialize
