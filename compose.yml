@@ -4,6 +4,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.dev
+    environment:
+      LOG_LEVEL: INFO
     volumes:
       - /home/houfek/Work/MMCI/sequencing_pipeline/data-catalogue-playground/muni-sc/OrganisedRuns/:/OrganisedRuns
       - /home/houfek/Work/MMCI/sequencing_pipeline/data-catalogue-playground/muni-sc/Libraries:/Libraries
