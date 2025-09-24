@@ -24,8 +24,8 @@ def process_runs(run_paths: List[str], libraries_folders: str, importer: Metadat
         logger = LoggingConfig.initialize(run_id, log_dir)
         try:
             logger.info(f"Processing {absolute_run_path}...")
-            logger.debug("just testing")
             run_metadata = collect_run_metadata(absolute_run_path, run_type)
+            logger.info(f"Collected run metadata") 
             catalog_info_folder = os.path.join(absolute_run_path, "catalog_info_per_pred_number")
             lib_manager = LibrariesManager(libraries_folders, absolute_run_path)
 
@@ -33,7 +33,7 @@ def process_runs(run_paths: List[str], libraries_folders: str, importer: Metadat
                 process_and_upload_sample(sample_id, catalog_info_folder, absolute_run_path, run_metadata, lib_manager, importer, run_type)
 
             open(os.path.join(absolute_run_path, ".uploaded"), "w").close()
-            logger.info(f"Successfully uploaded run {absolute_run_path}...")
+            logger.info(f"Successfully uploaded all uploadable samples in run {absolute_run_path}")
 
         except FileNotFoundError as e:
             logger.info(f"Error: Missing file in run {absolute_run_path}: {e}")
@@ -47,15 +47,21 @@ def process_runs(run_paths: List[str], libraries_folders: str, importer: Metadat
 
 def process_and_upload_sample(sample_id: str, catalog_info_folder: str, absolute_run_path: str, run_metadata: RunInfoMMCI, lib_manager: LibrariesManager, importer: MetadataImport, run_type: str) -> None:
     """Process and upload sample data."""
+    logger = LoggingConfig.get_logger()
     clinical_info_path = os.path.join(catalog_info_folder, sample_id)
     sample_id = sample_id.replace(".json", "")
+    logger.info(f"Processing sample {sample_id}")
+
     sample_path = os.path.join(absolute_run_path, "Samples", sample_id)
     lib_data = lib_manager.get_data_from_libraries(sample_id)
+    logger.info(f"Collected data from libraries") 
 
     sample_metadata = collect_sample_metadata(absolute_run_path, sample_path, catalog_info_folder, run_type)
+    logger.info(f"Collected sample metadata") 
 
     # upload sample to catalogue
     importer.upload(run_metadata, sample_metadata, clinical_info_path, run_type, lib_data)
+    logger.info(f"Uploaded sample {sample_id} to catalogue successfully")
 
 def collect_run_metadata(absolute_run_path: str, run_type: str) -> RunInfoMMCI:
     """Collect metadata for the run based on the run type."""
