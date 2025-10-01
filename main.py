@@ -82,13 +82,7 @@ def collect_sample_metadata(absolute_run_path: str, sample_path: str, catalog_in
         raise ValueError(f"Unsupported run type: {run_type}")
 
 def run(organised_files_folders, wsi_folders, libraries_folders, log_dir):
-    molgenis_login = os.environ["CATALOG_LOGIN"]
-    molgenis_password = os.environ["CATALOG_PASSWORD"]
-
-    importer = MetadataImport(wsi_folders,
-                              libraries_folders,
-                              molgenis_login,
-                              molgenis_password)
+    importer = MetadataImport(wsi_folders, libraries_folders)
 
     miseq_run_paths_for_catalogue_upload = get_all_runs_with_data_for_catalogue(organised_files_folders, wanted_run_type="MiSEQ")
 

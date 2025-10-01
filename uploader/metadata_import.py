@@ -1,5 +1,6 @@
 import molgenis.client
 import json
+import os
 from molgenis_emx2_pyclient import Client
 
 
@@ -24,9 +25,13 @@ class MetadataImport:
     FAIR_ANALYSIS = "fair-genomes_Analysis"
     FAIR_INDI_CONSENT = "fair-genomes_IndividualConsent"
 
-    def __init__(self, wsi_path, libraries_path, login, password):
+    def __init__(self, wsi_path, libraries_path):
+        login = os.getenv("CATALOG_LOGIN")
+        password = os.getenv("CATALOG_PASSWORD")
+        token = os.getenv("MOLGENIS_TOKEN")
+
         self.session = molgenis.client.Session("https://data.bbmri.cz/api/")
-        self.client = Client("http://147.251.245.78:8080", schema="Fair Genomes", token="eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsImV4cCI6NDkwMjEyMjY1MSwiaWF0IjoxNzQ2NDQ5MDUxLCJqdGkiOiJ0ZXN0X3Rva2VuIn0.dAJksYJlj9D1xa-pq57wKm1m0NKJucMDhROUTYk4Ae4")
+        self.client = Client("http://147.251.245.78:8080", schema="Fair Genomes", token=token)
         self.session.login(login, password)
 
         self.wsi_path = wsi_path
