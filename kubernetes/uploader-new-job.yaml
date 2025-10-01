@@ -1,0 +1,92 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: upload-sequencing-new
+  namespace: bbmri-mou-ns
+spec:
+  concurrencyPolicy: Allow
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    metadata:
+      creationTimestamp: null
+      name: upload-sequencing-new
+      namespace: bbmri-mou-ns
+    spec:
+      template:
+        metadata:
+          creationTimestamp: null
+        spec:
+          containers:
+          - command:
+            - python
+            - main.py
+            - -o
+            - /muni-sc/OrganisedRuns/
+            - -w
+            - /wsi/
+            - -d
+            - /muni-sc/Libraries/
+            - -l
+            - /muni-sc/OrganisedRuns/logs/uploader
+            env:
+            - name: CATALOG_LOGIN
+              valueFrom:
+                secretKeyRef:
+                  key: username
+                  name: catalog-secret
+            - name: CATALOG_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: password
+                  name: catalog-secret
+            - name: HTTPS_PROXY
+              valueFrom:
+                secretKeyRef:
+                  key: httpsproxy
+                  name: catalog-secret
+            - name: LOG_LEVEL
+              value: INFO
+            - name: MOLGENIS_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  key: molgenis_key
+                  name: catalog-secret
+                  optional: false
+            image: m16f/data-catalogue-uploader-test:latest
+            imagePullPolicy: Always
+            name: organise-sequencing
+            securityContext:
+              allowPrivilegeEscalation: false
+              capabilities:
+                drop:
+                - ALL
+            terminationMessagePath: /dev/termination-log
+            terminationMessagePolicy: File
+            volumeMounts:
+            - mountPath: /wsi/
+              name: data-wsi-volume
+              subPath: tiff
+            - mountPath: /muni-sc/
+              name: storage-catalogue-volume
+          dnsPolicy: ClusterFirst
+          restartPolicy: Never
+          schedulerName: default-scheduler
+          securityContext:
+            fsGroup: 1000
+            fsGroupChangePolicy: OnRootMismatch
+            runAsGroup: 1000
+            runAsNonRoot: true
+            runAsUser: 1005
+            seccompProfile:
+              type: RuntimeDefault
+          terminationGracePeriodSeconds: 30
+          volumes:
+          - name: storage-catalogue-volume
+            persistentVolumeClaim:
+              claimName: mou-mmci-sequencing
+          - name: data-wsi-volume
+            persistentVolumeClaim:
+              claimName: pvc-osd-secret
+  schedule: 0 22 * * 0,3,5
+  successfulJobsHistoryLimit: 3
+  suspend: false
