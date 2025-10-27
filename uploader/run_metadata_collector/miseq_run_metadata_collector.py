@@ -12,7 +12,9 @@ class CollectMiseqRunMetadata(RunMetadataCollector):
         self.run_path = run_path
 
     def collect(self) -> RunInfoMMCI:
-        xml_run_parameters = os.path.join(self.run_path, "runParameters.xml")
+        xml_run_parameters = os.path.join(self.run_path, "RunParameters.xml")
+        if not os.path.exists(xml_run_parameters):
+            xml_run_parameters = os.path.join(self.run_path, "runParameters.xml")
         xml_generate_fastq_run_statistics = os.path.join(self.run_path, "GenerateFASTQRunStatistics.xml")
         xml_run_info = os.path.join(self.run_path, "RunInfo.xml")
         txt_analysis_log = os.path.join(self.run_path, "AnalysisLog.txt")
