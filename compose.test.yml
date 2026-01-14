@@ -11,4 +11,5 @@ services:
     command: bash -c "python main.py
                               -o /muni-sc/organized_runs/
                               -w /muni-sc/wsi/
-                              -d /muni-sc/Libraries"
+                              -d /muni-sc/Libraries
+                              -l /muni-sc/organized_runs/logs/uploader"
