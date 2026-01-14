@@ -29,10 +29,11 @@ class MetadataImport:
         login = os.getenv("CATALOG_LOGIN")
         password = os.getenv("CATALOG_PASSWORD")
         token = os.getenv("MOLGENIS_TOKEN")
+        url = os.getenv("MOLGENIS_URL")
 
-        self.session = molgenis.client.Session("https://data.bbmri.cz/api/")
-        self.client = Client("http://147.251.245.78:8080", schema="Fair Genomes", token=token)
-        self.session.login(login, password)
+        #self.session = molgenis.client.Session("https://data.bbmri.cz/api/")
+        self.client = Client(url, schema="FairGenomes", token=token)
+        #self.session.login(login, password)
 
         self.wsi_path = wsi_path
         self.libraries_path = libraries_path

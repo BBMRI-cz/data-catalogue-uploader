@@ -15,9 +15,9 @@ class SamplePreparation(MolgenisObject):
         
         if lib_data:
             self.InputAmount = re.sub("[^0-9]", "", lib_data["input_amount"].split("-")[0]) if "-" in lib_data["input_amount"] else re.sub("[^0-9]", "", lib_data["input_amount"])
-            #self.LibraryPreparationKit = lib_data["library_prep_kit"]
+            self.LibraryPreparationKit = lib_data["library_prep_kit"]
             self.PcrFree = lib_data["pca_free"]
-            #self.TargetEnrichmentKit = lib_data["target_enrichment_kid"]
+            self.TargetEnrichmentKit = lib_data["target_enrichment_kid"]
             self.UmisPresent = lib_data["umi_present"]
             self.IntendedInsertSize = lib_data["intended_insert_size"]
             self.IntendedReadLength = lib_data["intended_read_length"]

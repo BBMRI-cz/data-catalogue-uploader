@@ -10,8 +10,8 @@ class IndividualConsent(MolgenisObject):
         sample = patient_dict["samples"][0]
         self.IndividualConsentIdentifier = patient_dict["ID"].replace("patient", "consent")
         self.PersonConsenting = patient_dict["ID"]
-        #self.ConsentFormUsed = "mmci_consentform_1"
-        #self.CollectedBy = "Masaryk Memorial Cancer Institute"
+        self.ConsentFormUsed = "mmci_consentform_1"
+        self.CollectedBy = "Bank of Biological Material, Masaryk Memorial Cancer Institute"
         self.SigningDate = sample["freeze_time"] if sample["material"].lower() == "tissue" else sample["taking_date"]
         self.RepresentedBy = "patient"
         self.DataUsePermissions = "general research use"

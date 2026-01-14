@@ -17,7 +17,7 @@ class Personal(MolgenisObject):
         self.CountryOfBirth = "Czechia"
         self.YearOfBirth = patient_dict["birth"].split("/")[1]
         self.InclusionStatus = "Not available (NAVU, nullflavor)"
-        #self.PrimaryAffiliatedInstitute = "Masaryk Memorial Cancer Institute"
+        self.PrimaryAffiliatedInstitute = "Bank of Biological Material, Masaryk Memorial Cancer Institute"
         self.ResourcesInOtherInstitutes = '"Not available (NAVU, nullflavor)"'
 
     def add_to_catalog_if_not_exist(self, session):
