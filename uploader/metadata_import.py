@@ -31,9 +31,7 @@ class MetadataImport:
         token = os.getenv("MOLGENIS_TOKEN")
         url = os.getenv("MOLGENIS_URL")
 
-        #self.session = molgenis.client.Session("https://data.bbmri.cz/api/")
         self.client = Client(url, schema="FairGenomes", token=token)
-        #self.session.login(login, password)
 
         self.wsi_path = wsi_path
         self.libraries_path = libraries_path
@@ -61,6 +59,3 @@ class MetadataImport:
             logger.info(json.dumps(molgenis_object.serialize, indent=2))
             # molgenis_object.add_to_catalog_if_not_exist(self.session)
             molgenis_object.upsert_to_catalog(self.client)
-
-    def __del__(self):
-        self.session.logout()
