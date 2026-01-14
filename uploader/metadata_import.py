@@ -30,8 +30,9 @@ class MetadataImport:
         password = os.getenv("CATALOG_PASSWORD")
         token = os.getenv("MOLGENIS_TOKEN")
         url = os.getenv("MOLGENIS_URL")
+        schema = os.getenv("MOLGENIS_SCHEMA")
 
-        self.client = Client(url, schema="FairGenomes", token=token)
+        self.client = Client(url, schema=schema, token=token)
 
         self.wsi_path = wsi_path
         self.libraries_path = libraries_path
