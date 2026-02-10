@@ -41,10 +41,10 @@ class CollectNextSeqRunMetadata(RunMetadataCollector):
 
     def _find_data_run_completion_status(self, data_tree):   #this function extracts run parameters from file RunCompletionStatus
         for element in data_tree.iter("RunCompletionStatus"):
-            self.run_metadata.other += f"ClusterDensity: {element.find('ClusterDensity').text}, "
-            self.run_metadata.other += f"ClusterPF: {element.find('ClustersPassingFilter').text}, "
-            self.run_metadata.other += f"EstimatedYield: {element.find('EstimatedYield').text}, "
-            self.run_metadata.other += f"ErrorDescription: {element.find('ErrorDescription').text}"
+            self.run_metadata.clusterDensity = element.find('ClusterDensity').text
+            self.run_metadata.clusterPF = element.find('ClustersPassingFilter').text
+            self.run_metadata.estimatedYield = element.find('EstimatedYield').text
+            self.run_metadata.errorDescription = element.find('ErrorDescription').text
 
     def _find_data_in_run_info(self, data_tree):
         for element in data_tree.iter("Run"):

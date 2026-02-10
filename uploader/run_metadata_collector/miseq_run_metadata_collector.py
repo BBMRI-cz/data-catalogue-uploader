@@ -46,11 +46,11 @@ class CollectMiseqRunMetadata(RunMetadataCollector):
             isoformat = d.isoformat()
             self.run_info.seqDate = isoformat
         for element in run_params_tree.iter("Setup"):
-            self.run_info.numLanes = int(element.find("NumLanes").text)
+            self.run_info.numLanes = element.find("NumLanes").text
 
     def _find_data_in_generate_fastq_runstatistics(self, generate_fq_stats_tree):
         for element in generate_fq_stats_tree.iter("RunStats"):
-            self.run_info.other += f"ClusterPF: {element.find('NumberOfClustersPF').text}"
+            self.run_info.clusterPF = element.find('NumberOfClustersPF').text
         self.run_info.percentageTR20 = "NA"
 
     def _find_data_in_run_info(self, run_info_tree):
