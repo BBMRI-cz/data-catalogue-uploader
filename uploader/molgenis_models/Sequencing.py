@@ -18,7 +18,19 @@ class Sequencing(MolgenisObject):
         self.MedianReadDepth = sample_dict.avReadDepth
         self.ObservedReadLength = sample_dict.obsReadLength
         self.PercentageQ30 = run_metadata_dict.percentageQ30.replace("%", "") if run_metadata_dict.percentageQ30 else None
-        self.OtherQualityMetrics = run_metadata_dict.other
+
+        self.OtherQualityMetrics = " ".join(
+            f"{name}: {value}" 
+            for name, value in [
+                ("ClusterPF", run_metadata_dict.clusterPF),
+                ("NumLanes", run_metadata_dict.numLanes),
+                ("FlowcellID", run_metadata_dict.flowcellID),
+                ("ClusterDensity", run_metadata_dict.clusterDensity),
+                ("EstimatedYield", run_metadata_dict.estimatedYield),
+                ("ErrorDescription", run_metadata_dict.errorDescription)
+            ] 
+            if value not in (None, "", [])
+        )
 
     def add_to_catalog_if_not_exist(self, session):
         analysis_ids = [val["SequencingIdentifier"] for val in session.get(self.TYPE)]

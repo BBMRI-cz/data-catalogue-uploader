@@ -11,11 +11,14 @@ class RunInfoMMCI:
         self.seqMethod: str = "Illumina Sequencing"
         self.percentageQ30: str = ''    #AnalysisLog.txt
         self.percentageTR20: str = 'NA'
-        self.other: str = '' # commented below
 
-        # self.clusterPF: int = 0         #GemerateFASTQRunStatistics
-        # self.numLanes: int = 0          #XML_RunParameters
-        # self.flowcellID: str = ''       #XML_RunInfo
+        self.clusterPF: str         #GemerateFASTQRunStatistics
+        self.numLanes: str          #XML_RunParameters
+        self.flowcellID: str        #XML_RunInfo
+        self.clusterDensity: str 
+        self.clusterPF: str
+        self.estimatedYield: str
+        self.errorDescription: str
 
 
 class RunMetadataCollector(ABC):
