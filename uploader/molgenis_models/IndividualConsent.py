@@ -1,6 +1,7 @@
 from uploader.logging_config.logging_config import LoggingConfig
 from uploader.molgenis_models.MolgenisObject import MolgenisObject
 from molgenis_emx2_pyclient import Client
+from datetime import datetime
 
 class IndividualConsent(MolgenisObject):
 
@@ -12,7 +13,13 @@ class IndividualConsent(MolgenisObject):
         self.PersonConsenting = patient_dict["ID"]
         self.ConsentFormUsed = "mmci_consentform_1"
         self.CollectedBy = "Bank of Biological Material, Masaryk Memorial Cancer Institute"
-        self.SigningDate = sample["freeze_time"] if sample["material"].lower() == "tissue" else sample["taking_date"]
+        raw_date = (
+            sample["freeze_time"]
+            if sample["material"].lower() == "tissue"
+            else sample["taking_date"]
+        )
+
+        self.SigningDate = self._to_iso_datetime(raw_date)
         self.RepresentedBy = "patient"
         self.DataUsePermissions = "general research use"
 
@@ -29,3 +36,24 @@ class IndividualConsent(MolgenisObject):
     def _add_to_catalog(self, session):
         data_dict = self.serialize
         session.add_all(self.TYPE, [data_dict])
+
+
+    def _to_iso_datetime(self, value):
+        if not value:
+            return None
+
+        value = value.strip()
+
+        try:
+            dt = datetime.fromisoformat(value)
+            return dt.isoformat()
+        except ValueError:
+            pass
+
+        try:
+            dt = datetime.strptime(value, "%d/%m/%Y, %H:%M:%S")
+            return dt.isoformat()
+        except ValueError:
+            pass
+
+        raise ValueError(f"Unsupported datetime format: {value}")

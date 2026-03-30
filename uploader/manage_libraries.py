@@ -89,37 +89,28 @@ class LibrariesManager:
             for _, row in dataframe.iterrows():
                 if row["Text in parameters"] in panel_name_from_parameter_file.lower():
                     return {
-                        "input_amount": row["Input Amount"],
                         "library_prep_kit": row["code in the molgenis catalogue"].split(":")[0],
                         "pca_free": row["PCR Free"],
                         "target_enrichment_kid": row["Target Enrichment Kit"],
                         "umi_present": row["UMIs Present"],
-                        "intended_insert_size": int(row["Intended Insert Size"]),
-                        "intended_read_length": int(row["Intended Read Length"]),
                         "genes": row["Genes (*all coding regions covered)"]
                     }
         else:
             for _, row in dataframe.iterrows():
                 if look_for_manual and panel_value in row["Panel"] and row["Text in parameters"] == "manual":
                     return {
-                        "input_amount": row["Input Amount"],
                         "library_prep_kit": row["code in the molgenis catalogue"].split(":")[0],
                         "pca_free": row["PCR Free"],
                         "target_enrichment_kid": row["Target Enrichment Kit"],
                         "umi_present": row["UMIs Present"],
-                        "intended_insert_size": int(row["Intended Insert Size"]),
-                        "intended_read_length": int(row["Intended Read Length"]),
                         "genes": row["Genes (*all coding regions covered)"]
                     }
                 if not look_for_manual and panel_value in row["Panel"]:
                     return {
-                        "input_amount": row["Input Amount"],
                         "library_prep_kit": row["code in the molgenis catalogue"].split(":")[0],
                         "pca_free": row["PCR Free"],
                         "target_enrichment_kid": row["Target Enrichment Kit"],
                         "umi_present": row["UMIs Present"],
-                        "intended_insert_size": int(row["Intended Insert Size"]),
-                        "intended_read_length": int(row["Intended Read Length"]),
                         "genes": row["Genes (*all coding regions covered)"]
                     }
             return None

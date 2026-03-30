@@ -3,6 +3,7 @@ import uuid
 from uploader.logging_config.logging_config import LoggingConfig
 from uploader.molgenis_models.MolgenisObject import MolgenisObject
 from molgenis_emx2_pyclient import Client
+from datetime import datetime
 
 
 class Material(MolgenisObject):
@@ -14,8 +15,15 @@ class Material(MolgenisObject):
         self.MaterialIdentifier = sample["sample_ID"]
         self.CollectedFromPerson = patient_dict["ID"]
         self.BelongsToDiagnosis = f"mmci_clinical_{uuid.UUID(int=int(sample['biopsy_number'].replace('/', '').replace('-', '')))}"
-        self.SamplingTimestamp = sample["cut_time"] if sample["material"].lower() == "tissue" else sample["taking_date"]
-        self.RegistrationTimestamp = sample["freeze_time"] if sample["material"].lower() == "tissue" else sample["taking_date"]
+        self.SamplingTimestamp = self._to_iso_datetime(
+            sample["cut_time"] if sample["material"].lower() == "tissue"
+            else sample["taking_date"]
+        )
+
+        self.RegistrationTimestamp = self._to_iso_datetime(
+            sample["freeze_time"] if sample["material"].lower() == "tissue"
+            else sample["taking_date"]
+        )
         self.BiospecimenType = sample_dict.bioSpeciType
         self.PathologicalState = sample_dict.pathoState
         self.StorageConditions = sample_dict.storCond
@@ -51,3 +59,23 @@ class Material(MolgenisObject):
         fixed_biopsy = f"{year}_{remaining}-{biopsy_number.split('/')[1].split('-')[1].zfill(2)}"
 
         return os.path.join(year, remaining[:2], remaining[2:]), fixed_biopsy
+
+    def _to_iso_datetime(self, value):
+        if not value:
+            return None
+
+        value = value.strip()
+
+        try:
+            dt = datetime.fromisoformat(value)
+            return dt.isoformat()
+        except ValueError:
+            pass
+
+        try:
+            dt = datetime.strptime(value, "%d/%m/%Y, %H:%M:%S")
+            return dt.isoformat()
+        except ValueError:
+            pass
+
+        raise ValueError(f"Unsupported datetime format: {value}")
