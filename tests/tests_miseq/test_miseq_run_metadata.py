@@ -17,7 +17,7 @@ FAKE_RUN_FOR_TESTING = os.path.abspath(os.path.join(
 ))
 
 COMPLETE_FAKE_RUN_FOR_TESTING = os.path.join(FAKE_RUN_FOR_TESTING, "2020", "MiSEQ", "complete-runs",
-                                             "2020_M00000_0000_00000000-00000")
+                                             "200101_M00000_0000_00000000-00000")
 
 
 def _copy_fake_destination():

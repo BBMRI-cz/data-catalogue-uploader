@@ -18,7 +18,7 @@ FAKE_RUN_FOR_TESTING = os.path.abspath(os.path.join(
 ))
 
 COMPLETE_FAKE_RUN_FOR_TESTING = os.path.join(FAKE_RUN_FOR_TESTING, "2020", "MiSEQ", "complete-runs",
-                                             "2020_M00000_0000_00000000-00000")
+                                             "200101_M00000_0000_00000000-00000")
 
 FAKE_SAMPLE_DATA = os.path.join(COMPLETE_FAKE_RUN_FOR_TESTING, "Samples",
                                 "mmci_predictive_00000000-0000-0000-0000-000000000001")

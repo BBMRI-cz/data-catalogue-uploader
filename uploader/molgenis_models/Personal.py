@@ -15,7 +15,7 @@ class Personal(MolgenisObject):
         self.CountryOfResidence = "Czechia"
         self.Ancestry = '"Not asked (NASK, nullflavor)"'
         self.CountryOfBirth = "Czechia"
-        self.YearOfBirth = patient_dict["birth"].split("/")[1]
+        self.YearOfBirth = self._get_year_from_birth_date(patient_dict["birth"])
         self.InclusionStatus = "Not available (NAVU, nullflavor)"
         self.PrimaryAffiliatedInstitute = "Bank of Biological Material, Masaryk Memorial Cancer Institute"
         self.ResourcesInOtherInstitutes = '"Not available (NAVU, nullflavor)"'
@@ -34,18 +34,29 @@ class Personal(MolgenisObject):
         data_dict = self.serialize
         session.add_all(self.TYPE, [data_dict])
 
+    def _get_year_from_birth_date(self, birth):
+        birth_split = birth.split("/")
+        if birth.startswith("--"):
+            return birth_split[1]
+        return birth_split[2]
+
     def _convert_gender_at_birth(self, sex):
-        if sex == "male":
+        sex = str(sex).strip().lower()
+
+        if sex in ("1", "male"):
             return "assigned male at birth"
-        elif sex == "female":
+        elif sex in ("2", "female"):
             return "assigned female at birth"
         else:
-            return "Asked but unkown (ASKU, nullflavor)"
+            return "Asked but unknown (ASKU, nullflavor)"
+
 
     def _convert_genotypic_sex(self, sex):
-        if sex == "male":
+        sex = str(sex).strip().lower()
+
+        if sex in ("1", "male"):
             return "XY Genotype"
-        elif sex == "female":
+        elif sex in ("2", "female"):
             return "XX Genotype"
         else:
-            return "Asked but unkown (ASKU, nullflavor)"
+            return "Asked but unknown (ASKU, nullflavor)"

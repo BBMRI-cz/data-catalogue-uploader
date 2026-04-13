@@ -12,13 +12,13 @@ class RunInfoMMCI:
         self.percentageQ30: str = ''    #AnalysisLog.txt
         self.percentageTR20: str = 'NA'
 
-        self.clusterPF: str         #GemerateFASTQRunStatistics
-        self.numLanes: str          #XML_RunParameters
-        self.flowcellID: str        #XML_RunInfo
-        self.clusterDensity: str 
-        self.clusterPF: str
-        self.estimatedYield: str
-        self.errorDescription: str
+        self.clusterPF: str = ''         #GemerateFASTQRunStatistics
+        self.numLanes: str = ''         #XML_RunParameters
+        self.flowcellID: str = ''      #XML_RunInfo
+        self.clusterDensity: str = '' 
+        self.clusterPF: str = ''
+        self.estimatedYield: str = ''
+        self.errorDescription: str = ''
 
 
 class RunMetadataCollector(ABC):

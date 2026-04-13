@@ -43,13 +43,31 @@ class Clinical(MolgenisObject):
     def _calculate_age_at_diagnosis(self, birth, sample):
         datetime_format = "%Y-%m-%d"
         birth = self._adjust_birth_format(birth)
+        birth_dt = self._parse_datetime_to_formats(birth)
         if sample["material"].lower() == "tissue":
-            return relativedelta.relativedelta(datetime.strptime(sample["freeze_time"],
-                                                                 f"{datetime_format}T%H:%M:%S"),
-                                datetime.strptime(birth, datetime_format)).years
+            freeze_dt = self._parse_datetime_to_formats(sample["freeze_time"])
+            return relativedelta.relativedelta(freeze_dt, birth_dt).years
         else:
-            return relativedelta.relativedelta(datetime.strptime(sample["taking_date"], datetime_format),
-                                               datetime.strptime(birth, datetime_format)).years
+            taking_dt = self._parse_datetime_to_formats(sample["taking_date"])
+            return relativedelta.relativedelta(taking_dt, birth_dt).years
+
+
+    def _parse_datetime_to_formats(self, s: str) -> datetime:
+
+        FORMATS = [
+            "%Y-%m-%dT%H:%M:%S",     # 2024-01-09T09:27:00
+            "%d/%m/%Y, %H:%M:%S",    # 17/05/2024, 00:00:00
+            "%Y-%m-%d",   # 1944-02-01
+            "%d/%m/%Y",   # 01/02/1944
+
+        ]
+        for fmt in FORMATS:
+            try:
+                return datetime.strptime(s, fmt)
+            except ValueError:
+                continue
+
+        raise ValueError(f"Unsupported datetime format: {s}")
 
     def _adjust_birth_format(self, birth):
         if birth.startswith("--"):

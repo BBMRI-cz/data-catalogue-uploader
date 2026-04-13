@@ -1,11 +1,12 @@
 import pytest
+from uploader.logging_config.logging_config import LoggingConfig
 from uploader.manage_libraries import LibrariesManager
 import os
 import shutil
 
 TEST_LIBRARY_FOLDER = os.path.join(os.path.dirname(__file__), "test_libraries")
 TEST_DESTINATION_RUN = os.path.join(os.path.dirname(__file__), "test_destination_for_copy", "2020", "MiSEQ", "complete-runs",
-                                    "2020_M00000_0000_00000000-00000")
+                                    "200101_M00000_0000_00000000-00000")
 SPECIAL_SAMPLE_SHEET = os.path.join(os.path.dirname(__file__), "SpecialSampleSheet.csv")
 
 
@@ -22,7 +23,6 @@ def use_different_sample_sheet(request):
     shutil.move(SPECIAL_SAMPLE_SHEET, os.path.join(TEST_DESTINATION_RUN, "SampleSheet.csv"))
 
     request.addfinalizer(_move_back_sample_sheets)
-
 
 def test_correct_library_file_selected():
     manager = LibrariesManager(TEST_LIBRARY_FOLDER, 
@@ -78,3 +78,28 @@ def test_correct_data_extraction_from_library_with_panel_based_on_date(use_diffe
                                 'pca_free': True,
                                 'target_enrichment_kid': 'KAPA HyperChoice',
                                 'umi_present': False}
+
+def test_correct_data_extracted_from_nextseq_run():
+    nextseq_run_path = os.path.join(
+        os.path.dirname(__file__),
+        "2024",
+        "NextSeq",
+        "230101_N0000000_0000_0000000000"
+    )
+
+    manager = LibrariesManager(
+        TEST_LIBRARY_FOLDER,
+        nextseq_run_path
+    )
+
+    results = manager.get_data_from_libraries(
+        "mmci_predictive_00000000-0000-0000-0000-000000000001"
+    )
+
+    assert results == {
+        "library_prep_kit": "TruSight Oncology 500 by Illumina",
+        "pca_free": True,
+        "target_enrichment_kid": "TruSight Oncology Enrichment (Illumina)",
+        "umi_present": True,
+        "genes": "NRAS, NRG1, AKT2, ALK, MDM2, MDM4, CCND1, TFRC, AR, CCND3,CCNE1, FGF1, MET, PTEN, FGF10, FGF14, FGF19, FGF2, JAK2, EGFR, FGF23, FGF3, FGF4, FGF5, ATM, CDK4, FGF6, CDK6, FGF7, PDGFRA, FGF8, PDGFRB, FGF9, FGFR1, FGFR2, FGFR3, KIT, ERBB2, FGFR4, MYC, RAF1, ERBB3, MYCL1, MYCN, ERCC1, ERCC2, CHEK1, KRAS, PIK3CB, CHEK2, LAMP1, RET, ESR1, RICTOR, BRAF, BRCA1, RPS6KB1, BRCA2"
+    }
