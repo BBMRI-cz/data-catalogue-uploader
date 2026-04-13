@@ -1,6 +1,8 @@
 import pandas as pd
 import os
 
+from uploader.logging_config.logging_config import LoggingConfig
+
 
 class LibrariesManager:
 
@@ -19,6 +21,7 @@ class LibrariesManager:
         self.sample_sheet_path = os.path.join(run_path, "SampleSheet.csv")
 
     def get_data_from_libraries(self, predictive_number):
+        logger = LoggingConfig.get_logger()
         parameters_path = self._get_parameteres_path(predictive_number)
 
         df = pd.read_csv(self.libraries_path, delimiter=";", encoding="CP1250")
@@ -28,32 +31,92 @@ class LibrariesManager:
         df["Panel"] = df["Panel"].str.lower()
         df["Text in parameters"] = df["Text in parameters"].str.lower()
 
-        possible_params = df["Text in parameters"].tolist()
-        library_name_in_parameter_file = self._look_for_lib_in_parameters(possible_params, parameters_path)
-        if library_name_in_parameter_file is None:
-            samplesheet_df = pd.read_csv(self.sample_sheet_path, delimiter=",",
-                                         names=["[Header]", "Unnamed: 1", "Unnamed: 2", "Unnamed: 3", "Unnamed: 4",
-                                                "Unnamed: 5", "Unnamed: 6", "Unnamed: 7", "Unnamed: 8", "Unnamed: 9"])
-            experiment = samplesheet_df[samplesheet_df["[Header]"] == "Experiment Name"]["Unnamed: 1"].values[0]
-            experiment_name, experiment_date = experiment.split("_")
+        # Try {pseudo}_Parameters.txt file
+        if os.path.exists(parameters_path):
+            possible_params = df["Text in parameters"].tolist()
+            library_name = self._look_for_lib_in_parameters(possible_params, parameters_path)
 
-            reference_date = self._fix_reference_date(experiment_date)
-
-            if experiment_name in self.sample_sheet_to_panel.keys():
-                experiment_name = self.sample_sheet_to_panel[experiment_name]
-
-            possible_names = [row["Panel"].lower() for _, row in df.iterrows()
-                              if experiment_name.lower() in row["Panel"] and
-                              self._date_in_date_range(row["Availability Date Range"], reference_date)]
-            if len(possible_names) == 1:
-                return self._create_dict_with_library_info(df, possible_names[0])
-            elif len(possible_names) > 1:
-                return self._create_dict_with_library_info(df, experiment_name.lower(), look_for_manual=True)
-            else:
-                return None
+            if library_name:
+                match = df[
+                    df["Text in parameters"].apply(lambda x: x in library_name.lower())
+                ]
+                if not match.empty:
+                    return self._extract_library_info_from_row(match.iloc[0])
         else:
-            return self._create_dict_with_library_info(df, [],
-                                                       panel_name_from_parameter_file=library_name_in_parameter_file)
+            logger.info(f"Parameters file does not exist for predictive number: {predictive_number}")
+
+        # No library name in the parameters file, so we need to extract data from run_path
+        run_folder_name = os.path.basename(self.run_path)
+        experiment_date_str = run_folder_name[:6]
+        reference_date = self._fix_reference_date(experiment_date_str)
+
+        if "_N" in run_folder_name:
+            return self._get_nextseq_library(df, reference_date)
+        elif "_M" in run_folder_name:
+            return self._get_miseq_library(df, reference_date)
+        else:
+            logger.warning(f"Unknown run type for run folder: {run_folder_name}")
+            return None
+
+    def _get_miseq_library(self, df, reference_date):
+        # Extract experiment name from sample sheet
+        samplesheet_df = pd.read_csv(
+            self.sample_sheet_path, delimiter=",",
+            names=["[Header]", "Unnamed: 1", "Unnamed: 2", "Unnamed: 3", "Unnamed: 4",
+                   "Unnamed: 5", "Unnamed: 6", "Unnamed: 7", "Unnamed: 8", "Unnamed: 9"]
+        )
+
+        experiment_row = samplesheet_df[samplesheet_df["[Header]"] == "Experiment Name"]
+        if experiment_row.empty:
+            return None
+
+        experiment = experiment_row["Unnamed: 1"].values[0]
+        
+        experiment_name = experiment.split("_")[0]
+
+        if experiment_name in self.sample_sheet_to_panel:
+            experiment_name = self.sample_sheet_to_panel[experiment_name]
+
+        experiment_name = experiment_name.lower()
+
+        base_match = df[
+            df["Panel"].str.contains(experiment_name) &
+            df["Availability Date Range"].apply(
+                lambda x: self._date_in_date_range(x, reference_date)
+            )
+        ]
+
+        if base_match.empty:
+            return None
+        if len(base_match) == 1:
+            return self._extract_library_info_from_row(base_match.iloc[0])
+
+        manual_match = df[
+            df["Panel"].str.contains(experiment_name) &
+            (df["Text in parameters"] == "manual")
+        ]
+        if not manual_match.empty:
+            row = manual_match.iloc[0]
+        else:
+            # fallback if no manual row exists
+            row = base_match.iloc[0]
+        return self._extract_library_info_from_row(row)
+
+    def _get_nextseq_library(self, df, reference_date):
+        no_param_rows = df[df["Text in parameters"] == "no_parameters"]
+
+        match = no_param_rows[
+            no_param_rows["Availability Date Range"].apply(
+                lambda x: self._date_in_date_range(x, reference_date)
+            )
+        ]
+
+        if match.empty:
+            return None
+
+        row = match.iloc[0] # pick the first row
+        return self._extract_library_info_from_row(row)
+
 
     def _get_parameteres_path(self, predictive_number):
         analysis_part = os.path.join(self.run_path, "Samples", predictive_number, "Analysis")
@@ -83,34 +146,11 @@ class LibrariesManager:
         else:
             return False
 
-    def _create_dict_with_library_info(self, dataframe, panel_value, look_for_manual=False,
-                                       panel_name_from_parameter_file=None):
-        if panel_name_from_parameter_file:
-            for _, row in dataframe.iterrows():
-                if row["Text in parameters"] in panel_name_from_parameter_file.lower():
-                    return {
-                        "library_prep_kit": row["code in the molgenis catalogue"].split(":")[0],
-                        "pca_free": row["PCR Free"],
-                        "target_enrichment_kid": row["Target Enrichment Kit"],
-                        "umi_present": row["UMIs Present"],
-                        "genes": row["Genes (*all coding regions covered)"]
-                    }
-        else:
-            for _, row in dataframe.iterrows():
-                if look_for_manual and panel_value in row["Panel"] and row["Text in parameters"] == "manual":
-                    return {
-                        "library_prep_kit": row["code in the molgenis catalogue"].split(":")[0],
-                        "pca_free": row["PCR Free"],
-                        "target_enrichment_kid": row["Target Enrichment Kit"],
-                        "umi_present": row["UMIs Present"],
-                        "genes": row["Genes (*all coding regions covered)"]
-                    }
-                if not look_for_manual and panel_value in row["Panel"]:
-                    return {
-                        "library_prep_kit": row["code in the molgenis catalogue"].split(":")[0],
-                        "pca_free": row["PCR Free"],
-                        "target_enrichment_kid": row["Target Enrichment Kit"],
-                        "umi_present": row["UMIs Present"],
-                        "genes": row["Genes (*all coding regions covered)"]
-                    }
-            return None
+    def _extract_library_info_from_row(self, row):
+        return {
+            "library_prep_kit": row["code in the molgenis catalogue"].split(":")[0],
+            "pca_free": row["PCR Free"],
+            "target_enrichment_kid": row["Target Enrichment Kit"],
+            "umi_present": row["UMIs Present"],
+            "genes": row["Genes (*all coding regions covered)"]
+        }
