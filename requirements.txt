@@ -1,6 +1,6 @@
 molgenis_emx2_pyclient
 molgenis-py-client
-pypdf==3.17.0
+pypdf==6.15.0
 pytest
 pytest-mock
 pandas
